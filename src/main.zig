@@ -1,24 +1,88 @@
 const std = @import("std");
+const res = @import("./resources.zig");
+const Game = @import("./model/game.zig").Game;
+const State = @import("./model/game.zig").State;
+const Player = @import("./model/player.zig").Player;
+const Scene = @import("./render.zig").Scene;
+const Action = @import("./model/action.zig").Action;
+const Textures = res.Textures;
+const r = @cImport({
+    @cInclude("raylib.h");
+});
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const allocator = std.heap.page_allocator;
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    r.InitWindow(1280, 720, "Piou Piou");
+    defer r.CloseWindow();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    r.SetTargetFPS(60);
 
-    try bw.flush(); // don't forget to flush!
-}
+    // load resources
+    const textures = &Textures.LoadAllTextures();
+    defer @constCast(textures).deinit();
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    // init game state
+    var game = try Game.init(allocator, "Player 1", "Player 2");
+    defer game.deinit();
+
+    // init scene
+    var scene = Scene.init(allocator, @constCast(textures));
+    defer scene.deinit();
+
+    // state cache
+    var cache_version: usize = 0;
+    var state = game.getState();
+
+    // main loop
+    while (!r.WindowShouldClose()) {
+
+        // check inputs
+        if (r.IsKeyPressed(r.KEY_Q)) {
+            break;
+        }
+        if (r.IsKeyPressed(r.KEY_R)) {
+            try game.handle(state.turn_idx, Action.RESET_GAME);
+        }
+        if (r.IsKeyPressed(r.KEY_ONE)) {
+            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_1);
+        }
+        if (r.IsKeyPressed(r.KEY_TWO)) {
+            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_2);
+        }
+        if (r.IsKeyPressed(r.KEY_THREE)) {
+            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_3);
+        }
+        if (r.IsKeyPressed(r.KEY_FOUR)) {
+            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_4);
+        }
+        if (r.IsKeyPressed(r.KEY_L)) {
+            try game.handle(state.turn_idx, Action.LAY_EGG);
+        }
+        if (r.IsKeyPressed(r.KEY_H)) {
+            try game.handle(state.turn_idx, Action.HATCH_EGG);
+        }
+        if (r.IsKeyPressed(r.KEY_S)) {
+            try game.handle(state.turn_idx, Action.STEAL_EGG);
+        }
+        if (r.IsKeyPressed(r.KEY_D)) {
+            try game.handle(state.turn_idx, Action.DEFEND_EGG);
+        }
+
+        // update state
+        var new_version = game.getVersion();
+        if (new_version != cache_version) {
+            cache_version = new_version;
+            state = game.getState();
+        }
+
+        // draw
+        r.BeginDrawing();
+        {
+            r.ClearBackground(r.RAYWHITE);
+            r.DrawFPS(10, 10);
+            try scene.render(&state);
+        }
+        r.EndDrawing();
+    }
 }
