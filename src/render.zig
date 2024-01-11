@@ -70,7 +70,7 @@ pub const Scene = struct {
         // draw last event
         var event_str = try getEventString(self.allocator, state.players[state.last_event.player_idx].name, state.last_event.action);
         defer self.allocator.free(event_str);
-        r.DrawText(event_str.ptr, 550, 550, 20, r.BLACK);
+        r.DrawText(event_str.ptr, 150, 550, 20, r.BLACK);
     }
 
     fn renderPlayer(self: Scene, player: *Player, x: usize, y: usize) !void {
@@ -115,12 +115,6 @@ pub const Scene = struct {
 
         // draw cards
         for (player.cards, 0..) |card, i| {
-            // r.DrawRectangleRounded(.{
-            //     .x = @floatFromInt(inner_x + i * 100 - 3),
-            //     .y = @floatFromInt(inner_y + v_space - 3),
-            //     .width = 86,
-            //     .height = 86,
-            // }, 0.5, 0, r.BLUE);
             r.DrawRectangleRounded(.{
                 .x = @floatFromInt(inner_x + i * 100),
                 .y = @floatFromInt(inner_y + v_space),

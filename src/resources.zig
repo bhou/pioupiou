@@ -14,14 +14,14 @@ pub const Textures = struct {
 
     pub fn LoadAllTextures() Textures {
         return Textures{
-            .chick = loadTexture("resources/chick-800.png"),
-            .fox = loadTexture("resources/fox-800.png"),
-            .hen = loadTexture("resources/hen-800.png"),
-            .nest = loadTexture("resources/nest-800.png"),
-            .roaster = loadTexture("resources/roster-800.png"),
-            .egg = loadTexture("resources/egg-800.png"),
+            .chick = loadTexture("resources/dist/chick-800.png"),
+            .fox = loadTexture("resources/dist/fox-800.png"),
+            .hen = loadTexture("resources/dist/hen-800.png"),
+            .nest = loadTexture("resources/dist/nest-800.png"),
+            .roaster = loadTexture("resources/dist/roster-800.png"),
+            .egg = loadTexture("resources/dist/egg-800.png"),
 
-            .exchange = loadTexture("resources/exchange-128.png"),
+            .exchange = loadTexture("resources/dist/exchange-128.png"),
         };
     }
 
