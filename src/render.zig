@@ -125,33 +125,41 @@ pub const Scene = struct {
                 .x = @floatFromInt(inner_x + i * 100 + 30),
                 .y = @floatFromInt(inner_y + v_space + 90),
             }, 0, 0.2, r.RED);
-            switch (card) {
-                Card.ROASTER => {
-                    r.DrawTextureEx(self.textures.roaster, .{
-                        .x = @floatFromInt(inner_x + i * 100),
-                        .y = @floatFromInt(inner_y + v_space),
-                    }, 0, 0.1, r.WHITE);
-                },
-                Card.HEN => {
-                    r.DrawTextureEx(self.textures.hen, .{
-                        .x = @floatFromInt(inner_x + i * 100),
-                        .y = @floatFromInt(inner_y + v_space),
-                    }, 0, 0.1, r.WHITE);
-                },
-                Card.NEST => {
-                    r.DrawTextureEx(self.textures.nest, .{
-                        .x = @floatFromInt(inner_x + i * 100),
-                        .y = @floatFromInt(inner_y + v_space),
-                    }, 0, 0.1, r.WHITE);
-                },
-                Card.FOX => {
-                    r.DrawTextureEx(self.textures.fox, .{
-                        .x = @floatFromInt(inner_x + i * 100),
-                        .y = @floatFromInt(inner_y + v_space),
-                    }, 0, 0.1, r.WHITE);
-                },
-                Card.PLACEHOLDER => {},
-                else => {},
+            // if (player.show_cards) {
+            if (true) {
+                switch (card) {
+                    Card.ROASTER => {
+                        r.DrawTextureEx(self.textures.roaster, .{
+                            .x = @floatFromInt(inner_x + i * 100),
+                            .y = @floatFromInt(inner_y + v_space),
+                        }, 0, 0.1, r.WHITE);
+                    },
+                    Card.HEN => {
+                        r.DrawTextureEx(self.textures.hen, .{
+                            .x = @floatFromInt(inner_x + i * 100),
+                            .y = @floatFromInt(inner_y + v_space),
+                        }, 0, 0.1, r.WHITE);
+                    },
+                    Card.NEST => {
+                        r.DrawTextureEx(self.textures.nest, .{
+                            .x = @floatFromInt(inner_x + i * 100),
+                            .y = @floatFromInt(inner_y + v_space),
+                        }, 0, 0.1, r.WHITE);
+                    },
+                    Card.FOX => {
+                        r.DrawTextureEx(self.textures.fox, .{
+                            .x = @floatFromInt(inner_x + i * 100),
+                            .y = @floatFromInt(inner_y + v_space),
+                        }, 0, 0.1, r.WHITE);
+                    },
+                    Card.PLACEHOLDER => {},
+                    else => {},
+                }
+            } else {
+                r.DrawTextureEx(self.textures.unknown, .{
+                    .x = @floatFromInt(inner_x + i * 100),
+                    .y = @floatFromInt(inner_y + v_space),
+                }, 0, 0.1, r.WHITE);
             }
         }
 

@@ -8,14 +8,16 @@ pub const Player = struct {
     eggs: u8,
     chicken: u8,
     is_active: bool,
+    show_cards: bool = true,
 
-    pub fn init(name: []const u8) Player {
+    pub fn init(name: []const u8, show_cards: bool) Player {
         return Player{
             .name = name,
             .cards = [_]Card{ Card.PLACEHOLDER, Card.PLACEHOLDER, Card.PLACEHOLDER, Card.PLACEHOLDER },
             .eggs = 0,
             .chicken = 0,
             .is_active = false,
+            .show_cards = show_cards,
         };
     }
 
@@ -33,6 +35,7 @@ pub const Player = struct {
             .eggs = self.eggs,
             .chicken = self.chicken,
             .is_active = self.is_active,
+            .show_cards = self.show_cards,
         };
     }
 

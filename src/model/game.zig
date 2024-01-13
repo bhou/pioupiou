@@ -6,6 +6,8 @@ const Action = @import("./action.zig").Action;
 const Event = @import("./action.zig").Event;
 const Card = @import("./card.zig").Card;
 
+const Mutex = std.Thread.Mutex;
+
 pub const State = struct {
     version: usize = 0,
     players: [2]Player,
@@ -49,6 +51,9 @@ fn shuffleCards(cards: []Card) void {
 /// Game struct keeps the state of the game and the interface to the
 pub const Game = struct {
     allocator: Allocator,
+
+    lock: Mutex = .{},
+
     state: State,
     cards: ArrayList(Card),
 
@@ -62,9 +67,9 @@ pub const Game = struct {
 
         try card_array_list.appendSlice(cards[0..]);
 
-        var p1 = Player.init(player1);
+        var p1 = Player.init(player1, true);
         p1.is_active = true;
-        var p2 = Player.init(player2);
+        var p2 = Player.init(player2, false);
         p2.is_active = false;
 
         p1.addCard(card_array_list.pop());
@@ -97,6 +102,9 @@ pub const Game = struct {
     }
 
     pub fn reset(self: *Game) !void {
+        self.lock.lock();
+        defer self.lock.unlock();
+
         self.cards.deinit();
 
         var card_array_list = ArrayList(Card).init(self.allocator);
@@ -129,6 +137,9 @@ pub const Game = struct {
     }
 
     fn shuffle(self: *Game) void {
+        self.lock.lock();
+        defer self.lock.unlock();
+
         var timestamp = std.time.timestamp();
         var rnd = std.rand.DefaultPrng.init(@intCast(timestamp));
         for (0..self.cards.items.len) |i| {
@@ -143,15 +154,23 @@ pub const Game = struct {
         }
     }
 
-    pub fn getVersion(self: Game) usize {
+    pub fn getVersion(self: *Game) usize {
+        self.lock.lock();
+        defer self.lock.unlock();
+
         return self.state.version;
     }
 
-    pub fn getState(self: Game) State {
+    pub fn getState(self: *Game) State {
+        self.lock.lock();
+        defer self.lock.unlock();
+
         return self.state.clone();
     }
 
     pub fn handle(self: *Game, player_idx: u8, action: Action) !void {
+        self.lock.lock();
+        defer self.lock.unlock();
         // if (player_idx != self.state.turn_idx and action != Action.RESET_GAME) {
         //     std.debug.print("Player {d} tried to play out of turn\n", .{player_idx});
         //     return;

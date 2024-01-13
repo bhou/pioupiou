@@ -1,10 +1,13 @@
 const std = @import("std");
+const thread = std.Thread;
 const res = @import("./resources.zig");
 const Game = @import("./model/game.zig").Game;
 const State = @import("./model/game.zig").State;
 const Player = @import("./model/player.zig").Player;
 const Scene = @import("./render.zig").Scene;
 const Action = @import("./model/action.zig").Action;
+const HumanAgent = @import("./agents/human.zig").HumanAgent;
+const GptAgent = @import("./agents/gpt.zig").GptAgent;
 const Textures = res.Textures;
 const r = @cImport({
     @cInclude("raylib.h");
@@ -23,7 +26,7 @@ pub fn main() !void {
     defer @constCast(textures).deinit();
 
     // init game state
-    var game = try Game.init(allocator, "Player 1", "Player 2");
+    var game = try Game.init(allocator, "Player 1", "Player AI");
     defer game.deinit();
 
     // init scene
@@ -34,6 +37,17 @@ pub fn main() !void {
     var cache_version: usize = 0;
     var state = game.getState();
 
+    // start agents
+    var human_agent = HumanAgent.init(&game);
+    var human = try thread.spawn(.{}, HumanAgent.run, .{&human_agent});
+    human.detach();
+
+    var gpt_agent = GptAgent.init(&game, 1);
+    var gpt = try thread.spawn(.{}, GptAgent.run, .{&gpt_agent});
+    gpt.detach();
+
+    var counter: usize = 0;
+
     // main loop
     while (!r.WindowShouldClose()) {
 
@@ -42,31 +56,9 @@ pub fn main() !void {
             break;
         }
         if (r.IsKeyPressed(r.KEY_R)) {
+            std.debug.print("reset game {d}\n", .{counter});
+            counter += 1;
             try game.handle(state.turn_idx, Action.RESET_GAME);
-        }
-        if (r.IsKeyPressed(r.KEY_ONE)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_1);
-        }
-        if (r.IsKeyPressed(r.KEY_TWO)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_2);
-        }
-        if (r.IsKeyPressed(r.KEY_THREE)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_3);
-        }
-        if (r.IsKeyPressed(r.KEY_FOUR)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_4);
-        }
-        if (r.IsKeyPressed(r.KEY_L)) {
-            try game.handle(state.turn_idx, Action.LAY_EGG);
-        }
-        if (r.IsKeyPressed(r.KEY_H)) {
-            try game.handle(state.turn_idx, Action.HATCH_EGG);
-        }
-        if (r.IsKeyPressed(r.KEY_S)) {
-            try game.handle(state.turn_idx, Action.STEAL_EGG);
-        }
-        if (r.IsKeyPressed(r.KEY_D)) {
-            try game.handle(state.turn_idx, Action.DEFEND_EGG);
         }
 
         // update state
