@@ -62,7 +62,7 @@ pub fn main() !void {
         }
 
         // update state
-        var new_version = game.getVersion();
+        const new_version = game.getVersion();
         if (new_version != cache_version) {
             cache_version = new_version;
             state = game.getState();

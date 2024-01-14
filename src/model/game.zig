@@ -34,15 +34,15 @@ const GameError = error{
 };
 
 fn shuffleCards(cards: []Card) void {
-    var timestamp = std.time.timestamp();
+    const timestamp = std.time.timestamp();
     var rnd = std.rand.DefaultPrng.init(@intCast(timestamp));
     for (0..cards.len) |i| {
-        var n = cards.len - 1 - i;
+        const n = cards.len - 1 - i;
         if (n == 0) {
             break;
         }
-        var j = rnd.random().intRangeLessThan(usize, 0, n);
-        var tmp = cards[i];
+        const j = rnd.random().intRangeLessThan(usize, 0, n);
+        const tmp = cards[i];
         cards[i] = cards[j];
         cards[j] = tmp;
     }
@@ -140,15 +140,15 @@ pub const Game = struct {
         self.lock.lock();
         defer self.lock.unlock();
 
-        var timestamp = std.time.timestamp();
+        const timestamp = std.time.timestamp();
         var rnd = std.rand.DefaultPrng.init(@intCast(timestamp));
         for (0..self.cards.items.len) |i| {
-            var n = self.cards.items.len - 1 - i;
+            const n = self.cards.items.len - 1 - i;
             if (n == 0) {
                 break;
             }
-            var j = rnd.random().intRangeLessThan(usize, 0, n);
-            var tmp = self.cards.items[i];
+            const j = rnd.random().intRangeLessThan(usize, 0, n);
+            const tmp = self.cards.items[i];
             self.cards.items[i] = self.cards.items[j];
             self.cards.items[j] = tmp;
         }
@@ -223,7 +223,7 @@ pub const Game = struct {
                 self.state.players[player_idx].addCard(self.cards.pop());
             },
             Action.STEAL_EGG => {
-                var other_player = &self.state.players[(player_idx + 1) % 2];
+                const other_player = &self.state.players[(player_idx + 1) % 2];
                 if (!self.state.players[player_idx].canStealEgg(other_player.*)) {
                     return;
                 }
@@ -234,7 +234,7 @@ pub const Game = struct {
                 if (self.state.last_event.action != Action.STEAL_EGG or !self.state.players[player_idx].canDefendSteal()) {
                     return;
                 }
-                var other_player = &self.state.players[(player_idx + 1) % 2];
+                const other_player = &self.state.players[(player_idx + 1) % 2];
                 self.state.players[player_idx].defendSteal(other_player);
                 self.state.players[player_idx].addCard(self.cards.pop());
                 self.state.players[player_idx].addCard(self.cards.pop());

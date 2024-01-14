@@ -68,7 +68,7 @@ pub const Scene = struct {
         try self.renderPlayer(&state.players[1], 700, 100);
 
         // draw last event
-        var event_str = try getEventString(self.allocator, state.players[state.last_event.player_idx].name, state.last_event.action);
+        const event_str = try getEventString(self.allocator, state.players[state.last_event.player_idx].name, state.last_event.action);
         defer self.allocator.free(event_str);
         r.DrawText(event_str.ptr, 150, 550, 20, r.BLACK);
     }
