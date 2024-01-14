@@ -161,6 +161,13 @@ pub const Game = struct {
         return self.state.version;
     }
 
+    pub fn getCardsCount(self: *Game) usize {
+        self.lock.lock();
+        defer self.lock.unlock();
+
+        return self.cards.items.len;
+    }
+
     pub fn getState(self: *Game) State {
         self.lock.lock();
         defer self.lock.unlock();

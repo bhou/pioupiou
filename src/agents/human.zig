@@ -14,10 +14,13 @@ pub const HumanAgent = struct {
     game_version: usize,
     state: *State,
 
-    pub fn init(game: *Game) HumanAgent {
+    player_idx: u8,
+
+    pub fn init(game: *Game, player_idx: u8) HumanAgent {
         return HumanAgent{
+            .player_idx = player_idx,
             .game = game,
-            .game_version = game.getVersion(),
+            .game_version = 99, // give the impossible initial version so that the first run will always update
             .state = @constCast(&game.getState()),
         };
     }
@@ -28,6 +31,11 @@ pub const HumanAgent = struct {
             if (self.game_version != game.getVersion()) {
                 self.game_version = game.getVersion();
                 self.state = @constCast(&game.getState());
+            }
+
+            if (self.state.turn_idx != self.player_idx) {
+                std.time.sleep(100 * std.time.ns_per_ms);
+                continue;
             }
 
             if (r.IsKeyPressed(r.KEY_SPACE)) {

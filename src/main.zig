@@ -8,6 +8,7 @@ const Scene = @import("./render.zig").Scene;
 const Action = @import("./model/action.zig").Action;
 const HumanAgent = @import("./agents/human.zig").HumanAgent;
 const GptAgent = @import("./agents/gpt.zig").GptAgent;
+const SimpleAgent = @import("./agents/simple.zig").SimpleAgent;
 const Textures = res.Textures;
 const r = @cImport({
     @cInclude("raylib.h");
@@ -38,13 +39,17 @@ pub fn main() !void {
     var state = game.getState();
 
     // start agents
-    var human_agent = HumanAgent.init(&game);
+    var human_agent = HumanAgent.init(&game, 0);
     var human = try thread.spawn(.{}, HumanAgent.run, .{&human_agent});
     human.detach();
 
-    var gpt_agent = GptAgent.init(&game, 1);
-    var gpt = try thread.spawn(.{}, GptAgent.run, .{&gpt_agent});
-    gpt.detach();
+    // var gpt_agent = GptAgent.init(&game, 1);
+    // var gpt = try thread.spawn(.{}, GptAgent.run, .{&gpt_agent});
+    // gpt.detach();
+
+    var simple_agent = SimpleAgent.init(&game, 1);
+    var simple = try thread.spawn(.{}, SimpleAgent.run, .{&simple_agent});
+    simple.detach();
 
     var counter: usize = 0;
 
@@ -73,7 +78,7 @@ pub fn main() !void {
         {
             r.ClearBackground(r.RAYWHITE);
             r.DrawFPS(10, 10);
-            try scene.render(&state);
+            try scene.render(&state, game.getCardsCount());
         }
         r.EndDrawing();
     }

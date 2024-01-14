@@ -23,23 +23,33 @@ pub const GptAgent = struct {
             .game = game,
             .game_version = game.getVersion(),
             .state = @constCast(&game.getState()),
-            .turn_idx_cache = 0,
+            .turn_idx_cache = 255,
         };
     }
 
     pub fn run(self: *GptAgent) !void {
-        var game = self.game;
         while (!r.WindowShouldClose()) {
-            if (game.getVersion() != self.game_version) {
-                self.game_version = game.getVersion();
-                self.state = @constCast(&game.getState());
+            if (self.game.getVersion() != self.game_version) {
+                self.game_version = self.game.getVersion();
+                self.state = @constCast(&self.game.getState());
             }
 
-            if (self.turn_idx_cache != self.state.turn_idx) {
-                self.turn_idx_cache = self.state.turn_idx;
+            if (self.turn_idx_cache == self.state.turn_idx) {
+                // the turn doesn't change, do nothing
+                std.time.sleep(100 * std.time.ns_per_ms);
+                continue;
+            }
 
-                if (self.turn_idx_cache == self.player_idx) {
-                    std.debug.print("GPT agent is thinking...\n", .{});
+            // update turn cache
+            self.turn_idx_cache = self.state.turn_idx;
+
+            // now contact GPT service for next move
+            if (self.turn_idx_cache == self.player_idx) {
+                std.debug.print("GPT agent is thinking...\n", .{});
+
+                // interaction with GPT service
+                while (true) {
+                    std.time.sleep(100 * std.time.ns_per_ms);
                 }
             }
 

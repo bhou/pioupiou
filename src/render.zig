@@ -63,14 +63,21 @@ pub const Scene = struct {
         _ = self;
     }
 
-    pub fn render(self: Scene, state: *State) !void {
+    pub fn render(self: Scene, state: *State, deck_size: usize) !void {
+        // draw deck size
+        // const deck_size_str = try std.fmt.allocPrint(self.allocator, "Cards left: {d}", .{0});
+        const deck_size_str = try std.fmt.allocPrint(self.allocator, "Cards left: {d}", .{deck_size});
+        defer self.allocator.free(deck_size_str);
+        r.DrawText(deck_size_str.ptr, 150, 10, 20, r.BLACK);
+
         try self.renderPlayer(&state.players[0], 150, 100);
         try self.renderPlayer(&state.players[1], 700, 100);
 
         // draw last event
         const event_str = try getEventString(self.allocator, state.players[state.last_event.player_idx].name, state.last_event.action);
         defer self.allocator.free(event_str);
-        r.DrawText(event_str.ptr, 150, 550, 20, r.BLACK);
+        const x: usize = if (state.last_event.player_idx == 0) 150 else 700;
+        r.DrawText(event_str.ptr, @intCast(x), 550, 20, r.BLACK);
     }
 
     fn renderPlayer(self: Scene, player: *Player, x: usize, y: usize) !void {
@@ -125,8 +132,8 @@ pub const Scene = struct {
                 .x = @floatFromInt(inner_x + i * 100 + 30),
                 .y = @floatFromInt(inner_y + v_space + 90),
             }, 0, 0.2, r.RED);
-            // if (player.show_cards) {
-            if (true) {
+            if (player.show_cards) {
+                // if (true) {
                 switch (card) {
                     Card.ROASTER => {
                         r.DrawTextureEx(self.textures.roaster, .{
