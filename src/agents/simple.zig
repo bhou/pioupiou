@@ -12,14 +12,16 @@ pub const SimpleAgent = struct {
     state: *State,
 
     moved_flag: bool,
+    action_delay_s: usize,
 
-    pub fn init(game: *Game, player_idx: u8) SimpleAgent {
+    pub fn init(game: *Game, player_idx: u8, action_delay_s: usize) SimpleAgent {
         return SimpleAgent{
             .player_idx = player_idx,
             .game = game,
-            .game_version = game.getVersion(),
+            .game_version = 99,
             .state = @constCast(&game.getState()),
             .moved_flag = false,
+            .action_delay_s = action_delay_s,
         };
     }
 
@@ -32,12 +34,17 @@ pub const SimpleAgent = struct {
 
                 // check if the same is over
                 if (self.state.last_event.action == Action.WIN) {
-                    if (self.state.last_event.player_idx == self.player_idx) {
-                        std.debug.print("I won!", .{});
-                    } else {
-                        std.debug.print("I lost!", .{});
-                    }
-                    break;
+                    // if (self.state.last_event.player_idx == self.player_idx) {
+                    //     std.debug.print("I won!", .{});
+                    // } else {
+                    //     std.debug.print("I lost!", .{});
+                    // }
+                    continue;
+                }
+
+                if (self.state.last_event.action == Action.DRAW) {
+                    // std.debug.print("It's a draw!", .{});
+                    continue;
                 }
 
                 if (self.state.turn_idx == self.player_idx) {
@@ -63,7 +70,9 @@ pub const SimpleAgent = struct {
             // first mark we have moved
             self.moved_flag = true;
             // wait 5 second to simulate thinking
-            std.time.sleep(5 * std.time.ns_per_s);
+            if (self.action_delay_s > 0) {
+                std.time.sleep(self.action_delay_s * std.time.ns_per_s);
+            }
 
             // now it is our turn, so we need to make a move
 

@@ -38,6 +38,9 @@ fn getEventString(allocator: Allocator, player_name: []const u8, action: Action)
         Action.WIN => {
             return try std.fmt.allocPrint(allocator, "{s} won the game", .{player_name});
         },
+        Action.DRAW => {
+            return try std.fmt.allocPrint(allocator, "It is a DRAW game!", .{});
+        },
         else => {
             return try std.fmt.allocPrint(allocator, "{s}'s turn", .{player_name});
         },

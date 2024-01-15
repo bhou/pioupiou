@@ -2,6 +2,7 @@ pub const Action = enum(u8) {
     NONE,
     RESET_GAME,
     WIN,
+    DRAW,
 
     EXCHANGE_CARD_1,
     EXCHANGE_CARD_2,

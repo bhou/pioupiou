@@ -38,6 +38,11 @@ pub const HumanAgent = struct {
                 continue;
             }
 
+            if (self.state.last_event.action == Action.WIN or self.state.last_event.action == Action.DRAW) {
+                std.time.sleep(100 * std.time.ns_per_ms);
+                continue;
+            }
+
             if (r.IsKeyPressed(r.KEY_SPACE)) {
                 std.debug.print("space pressed\n", .{});
                 std.time.sleep(100 * std.time.ns_per_ms);
@@ -77,45 +82,3 @@ pub const HumanAgent = struct {
         }
     }
 };
-
-/// an agent to manage the interaction between the game and the user
-pub fn run(game: *Game, state: *State) !void {
-    while (!r.WindowShouldClose()) {
-        if (r.IsKeyPressed(r.KEY_SPACE)) {
-            std.debug.print("space pressed\n", .{});
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_ONE)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_1);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_TWO)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_2);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_THREE)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_3);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_FOUR)) {
-            try game.handle(state.turn_idx, Action.EXCHANGE_CARD_4);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_L)) {
-            try game.handle(state.turn_idx, Action.LAY_EGG);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_H)) {
-            try game.handle(state.turn_idx, Action.HATCH_EGG);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_S)) {
-            try game.handle(state.turn_idx, Action.STEAL_EGG);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-        if (r.IsKeyPressed(r.KEY_D)) {
-            try game.handle(state.turn_idx, Action.DEFEND_EGG);
-            std.time.sleep(100 * std.time.ns_per_ms);
-        }
-    }
-}

@@ -36,15 +36,22 @@ const GameError = error{
 fn shuffleCards(cards: []Card) void {
     const timestamp = std.time.timestamp();
     var rnd = std.rand.DefaultPrng.init(@intCast(timestamp));
-    for (0..cards.len) |i| {
-        const n = cards.len - 1 - i;
-        if (n == 0) {
-            break;
+
+    // repeat random times from 10 to 20
+    const repeat = rnd.random().intRangeLessThan(usize, 10, 20);
+
+    for (0..repeat) |r| {
+        _ = r;
+        for (0..cards.len) |i| {
+            const n = cards.len - 1 - i;
+            if (n == 0) {
+                break;
+            }
+            const j = rnd.random().intRangeLessThan(usize, 0, n);
+            const tmp = cards[i];
+            cards[i] = cards[j];
+            cards[j] = tmp;
         }
-        const j = rnd.random().intRangeLessThan(usize, 0, n);
-        const tmp = cards[i];
-        cards[i] = cards[j];
-        cards[j] = tmp;
     }
 }
 
@@ -56,20 +63,27 @@ pub const Game = struct {
 
     state: State,
     cards: ArrayList(Card),
+    deck_multiplier: usize = 1,
 
-    pub fn init(allocator: Allocator, player1: []const u8, player2: []const u8) !Game {
+    const CARD_MULTIPLIER: usize = 1;
+    const FOX_COUNT: usize = 6 * CARD_MULTIPLIER;
+    const ROASTER_COUNT: usize = 15 * CARD_MULTIPLIER;
+    const HEN_COUNT: usize = 15 * CARD_MULTIPLIER;
+    const NEST_COUNT: usize = 11 * CARD_MULTIPLIER;
+
+    pub fn init(allocator: Allocator, player1: []const u8, player2: []const u8, deck_multiplier: usize) !Game {
         var card_array_list = ArrayList(Card).init(allocator);
-        var cards = [_]Card{Card.FOX} ** 12 ++ [_]Card{Card.ROASTER} ** 30 ++ [_]Card{Card.HEN} ** 30 ++ [_]Card{Card.NEST} ** 22;
-        for (0..10) |i| {
+        var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROASTER} ** ROASTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
+        for (0..deck_multiplier) |i| {
             _ = i;
-            shuffleCards(cards[0..]);
+            try card_array_list.appendSlice(cards[0..]);
         }
 
-        try card_array_list.appendSlice(cards[0..]);
+        shuffleCards(card_array_list.items);
 
         var p1 = Player.init(player1, true);
         p1.is_active = true;
-        var p2 = Player.init(player2, false);
+        var p2 = Player.init(player2, true);
         p2.is_active = false;
 
         p1.addCard(card_array_list.pop());
@@ -94,6 +108,7 @@ pub const Game = struct {
                 },
             },
             .cards = card_array_list,
+            .deck_multiplier = deck_multiplier,
         };
     }
 
@@ -101,19 +116,16 @@ pub const Game = struct {
         self.cards.deinit();
     }
 
-    pub fn reset(self: *Game) !void {
-        self.lock.lock();
-        defer self.lock.unlock();
-
+    fn reset(self: *Game) !void {
         self.cards.deinit();
 
         var card_array_list = ArrayList(Card).init(self.allocator);
-        var cards = [_]Card{Card.FOX} ** 12 ++ [_]Card{Card.ROASTER} ** 30 ++ [_]Card{Card.HEN} ** 30 ++ [_]Card{Card.NEST} ** 22;
-        for (0..10) |i| {
+        for (0..self.deck_multiplier) |i| {
             _ = i;
-            shuffleCards(cards[0..]);
+            var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROASTER} ** ROASTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
+            try card_array_list.appendSlice(cards[0..]);
         }
-        try card_array_list.appendSlice(cards[0..]);
+        shuffleCards(card_array_list.items);
         self.cards = card_array_list;
 
         self.state.players[0].reset();
@@ -186,34 +198,41 @@ pub const Game = struct {
         switch (action) {
             Action.RESET_GAME => {
                 try self.reset();
-                self.state.version += 1;
+                self.state.version = 1;
             },
             Action.EXCHANGE_CARD_1 => {
                 if (self.cards.items.len == 0) {
+                    self.draw(player_idx);
                     return;
                 }
                 self.state.players[player_idx].exchangeCard(0, self.cards.pop());
             },
             Action.EXCHANGE_CARD_2 => {
                 if (self.cards.items.len == 0) {
+                    self.draw(player_idx);
                     return;
                 }
                 self.state.players[player_idx].exchangeCard(1, self.cards.pop());
             },
             Action.EXCHANGE_CARD_3 => {
                 if (self.cards.items.len == 0) {
+                    self.draw(player_idx);
                     return;
                 }
                 self.state.players[player_idx].exchangeCard(2, self.cards.pop());
             },
             Action.EXCHANGE_CARD_4 => {
                 if (self.cards.items.len == 0) {
+                    self.draw(player_idx);
                     return;
                 }
                 self.state.players[player_idx].exchangeCard(3, self.cards.pop());
             },
             Action.LAY_EGG => {
                 if (!self.state.players[player_idx].canLayEgg() or self.cards.items.len < 3) {
+                    if (self.cards.items.len < 3) {
+                        self.draw(player_idx);
+                    }
                     return;
                 }
                 self.state.players[player_idx].layEgg();
@@ -225,6 +244,10 @@ pub const Game = struct {
                 if (!self.state.players[player_idx].canHatchEgg()) {
                     return;
                 }
+                if (self.cards.items.len < 2) {
+                    self.draw(player_idx);
+                    return;
+                }
                 self.state.players[player_idx].hatchEgg();
                 self.state.players[player_idx].addCard(self.cards.pop());
                 self.state.players[player_idx].addCard(self.cards.pop());
@@ -234,11 +257,19 @@ pub const Game = struct {
                 if (!self.state.players[player_idx].canStealEgg(other_player.*)) {
                     return;
                 }
+                if (self.cards.items.len < 1) {
+                    self.draw(player_idx);
+                    return;
+                }
                 self.state.players[player_idx].stealEgg(other_player);
                 self.state.players[player_idx].addCard(self.cards.pop());
             },
             Action.DEFEND_EGG => {
                 if (self.state.last_event.action != Action.STEAL_EGG or !self.state.players[player_idx].canDefendSteal()) {
+                    return;
+                }
+                if (self.cards.items.len < 2) {
+                    self.draw(player_idx);
                     return;
                 }
                 const other_player = &self.state.players[(player_idx + 1) % 2];
@@ -262,6 +293,12 @@ pub const Game = struct {
             return;
         }
 
+        // check draw condition
+        if (self.cards.items.len == 0) {
+            self.draw(player_idx);
+            return;
+        }
+
         self.state.players[self.state.turn_idx].is_active = false;
         self.state.turn_idx = (self.state.turn_idx + 1) % 2;
         self.state.players[self.state.turn_idx].is_active = true;
@@ -271,6 +308,14 @@ pub const Game = struct {
             .action = action,
         };
         // update the version
+        self.state.version += 1;
+    }
+
+    fn draw(self: *Game, player_idx: u8) void {
+        self.state.last_event = Event{
+            .player_idx = player_idx,
+            .action = Action.DRAW,
+        };
         self.state.version += 1;
     }
 };
