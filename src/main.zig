@@ -48,7 +48,8 @@ pub fn main() !void {
     var simple_1 = try thread.spawn(.{}, SimpleAgent.run, .{&simple_agent_1});
     simple_1.detach();
 
-    // var gpt_agent = GptAgent.init(&game, 1);
+    var gpt_agent = GptAgent.init(&game, 1);
+    _ = gpt_agent;
     // var gpt = try thread.spawn(.{}, GptAgent.run, .{&gpt_agent});
     // gpt.detach();
 
