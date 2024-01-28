@@ -148,24 +148,6 @@ pub const Game = struct {
         self.state.turn_idx = 0;
     }
 
-    fn shuffle(self: *Game) void {
-        self.lock.lock();
-        defer self.lock.unlock();
-
-        const timestamp = std.time.timestamp();
-        var rnd = std.rand.DefaultPrng.init(@intCast(timestamp));
-        for (0..self.cards.items.len) |i| {
-            const n = self.cards.items.len - 1 - i;
-            if (n == 0) {
-                break;
-            }
-            const j = rnd.random().intRangeLessThan(usize, 0, n);
-            const tmp = self.cards.items[i];
-            self.cards.items[i] = self.cards.items[j];
-            self.cards.items[j] = tmp;
-        }
-    }
-
     pub fn getVersion(self: *Game) usize {
         self.lock.lock();
         defer self.lock.unlock();

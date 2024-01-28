@@ -1,9 +1,9 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const State = @import("./model/game.zig").State;
-const Player = @import("./model/player.zig").Player;
-const Card = @import("./model/card.zig").Card;
-const Action = @import("./model/action.zig").Action;
+const State = @import("../../model/game.zig").State;
+const Player = @import("../../model/player.zig").Player;
+const Card = @import("../../model/card.zig").Card;
+const Action = @import("../../model/action.zig").Action;
 const res = @import("./resources.zig");
 const r = @cImport({
     @cInclude("raylib.h");
