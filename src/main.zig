@@ -19,15 +19,16 @@ pub fn main() !void {
     defer game.deinit();
 
     // start agents
-    // var human_agent = HumanAgent.init(&game, 0);
-    // var human = try thread.spawn(.{}, HumanAgent.run, .{&human_agent});
-    // human.detach();
-    var simple_agent_1 = SimpleAgent.init(&game, 0, AI_ACTION_DELAY);
-    var simple_1 = try thread.spawn(.{}, SimpleAgent.run, .{&simple_agent_1});
-    simple_1.detach();
+    var human_agent = HumanAgent.init(&game, 0);
+    var human = try thread.spawn(.{}, HumanAgent.run, .{&human_agent});
+    human.detach();
 
-    const gpt_agent = GptAgent.init(&game, 1);
-    _ = gpt_agent;
+    // var simple_agent_1 = SimpleAgent.init(&game, 0, AI_ACTION_DELAY);
+    // var simple_1 = try thread.spawn(.{}, SimpleAgent.run, .{&simple_agent_1});
+    // simple_1.detach();
+
+    // const gpt_agent = GptAgent.init(&game, 1);
+    // _ = gpt_agent;
     // var gpt = try thread.spawn(.{}, GptAgent.run, .{&gpt_agent});
     // gpt.detach();
 

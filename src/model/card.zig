@@ -1,5 +1,5 @@
 pub const Card = enum {
-    ROASTER,
+    ROOSTER,
     HEN,
     NEST,
     FOX,

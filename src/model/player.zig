@@ -50,14 +50,14 @@ pub const Player = struct {
         if (!self.canLayEgg()) {
             return;
         }
-        var change_roaster: bool = false;
+        var change_rooster: bool = false;
         var change_hen: bool = false;
         var change_nest: bool = false;
         for (self.cards, 0..) |card, i| {
             switch (card) {
-                Card.ROASTER => {
-                    if (!change_roaster) {
-                        change_roaster = true;
+                Card.ROOSTER => {
+                    if (!change_rooster) {
+                        change_rooster = true;
                         self.cards[i] = Card.PLACEHOLDER;
                     }
                 },
@@ -145,12 +145,12 @@ pub const Player = struct {
         if (!self.canDefendSteal()) {
             return;
         }
-        var roaster: u8 = 0;
+        var rooster: u8 = 0;
         for (self.cards, 0..) |card, i| {
             switch (card) {
-                Card.ROASTER => {
-                    if (roaster < 2) {
-                        roaster += 1;
+                Card.ROOSTER => {
+                    if (rooster < 2) {
+                        rooster += 1;
                         self.cards[i] = Card.PLACEHOLDER;
                     }
                 },
@@ -162,18 +162,18 @@ pub const Player = struct {
     }
 
     pub fn canLayEgg(self: Player) bool {
-        var hasRoaster: bool = false;
+        var hasRooster: bool = false;
         var hasHen: bool = false;
         var hasNest: bool = false;
         for (self.cards) |card| {
             switch (card) {
-                Card.ROASTER => hasRoaster = true,
+                Card.ROOSTER => hasRooster = true,
                 Card.HEN => hasHen = true,
                 Card.NEST => hasNest = true,
                 else => {},
             }
         }
-        return hasRoaster and hasHen and hasNest;
+        return hasRooster and hasHen and hasNest;
     }
 
     pub fn canHatchEgg(self: Player) bool {
@@ -198,12 +198,12 @@ pub const Player = struct {
     }
 
     pub fn canDefendSteal(self: Player) bool {
-        var roaster: u8 = 0;
+        var rooster: u8 = 0;
         for (self.cards) |card| {
-            if (card == Card.ROASTER) {
-                roaster += 1;
+            if (card == Card.ROOSTER) {
+                rooster += 1;
             }
         }
-        return roaster >= 2;
+        return rooster >= 2;
     }
 };

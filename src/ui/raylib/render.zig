@@ -27,7 +27,7 @@ fn getEventString(allocator: Allocator, player_name: []const u8, action: Action)
             return try std.fmt.allocPrint(allocator, "{s} stole an egg", .{player_name});
         },
         Action.DEFEND_EGG => {
-            return try std.fmt.allocPrint(allocator, "{s} defend the steal using 2 ROASTERs", .{player_name});
+            return try std.fmt.allocPrint(allocator, "{s} defend the steal using 2 ROOSTERs", .{player_name});
         },
         Action.LAY_EGG => {
             return try std.fmt.allocPrint(allocator, "{s} laid an egg", .{player_name});
@@ -138,8 +138,8 @@ pub const Scene = struct {
             if (player.show_cards) {
                 // if (true) {
                 switch (card) {
-                    Card.ROASTER => {
-                        r.DrawTextureEx(self.textures.roaster, .{
+                    Card.ROOSTER => {
+                        r.DrawTextureEx(self.textures.rooster, .{
                             .x = @floatFromInt(inner_x + i * 100),
                             .y = @floatFromInt(inner_y + v_space),
                         }, 0, 0.1, r.WHITE);

@@ -7,7 +7,7 @@ pub const Textures = struct {
     fox: r.Texture2D,
     hen: r.Texture2D,
     nest: r.Texture2D,
-    roaster: r.Texture2D,
+    rooster: r.Texture2D,
     egg: r.Texture2D,
     unknown: r.Texture2D,
 
@@ -19,7 +19,7 @@ pub const Textures = struct {
             .fox = loadTexture("resources/dist/fox-800.png"),
             .hen = loadTexture("resources/dist/hen-800.png"),
             .nest = loadTexture("resources/dist/nest-800.png"),
-            .roaster = loadTexture("resources/dist/roster-800.png"),
+            .rooster = loadTexture("resources/dist/roster-800.png"),
             .egg = loadTexture("resources/dist/egg-800.png"),
             .unknown = loadTexture("resources/dist/unknown-800.png"),
 
@@ -32,7 +32,7 @@ pub const Textures = struct {
         r.UnloadTexture(self.fox);
         r.UnloadTexture(self.hen);
         r.UnloadTexture(self.nest);
-        r.UnloadTexture(self.roaster);
+        r.UnloadTexture(self.rooster);
         r.UnloadTexture(self.egg);
 
         r.UnloadTexture(self.exchange);

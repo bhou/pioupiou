@@ -67,13 +67,13 @@ pub const Game = struct {
 
     const CARD_MULTIPLIER: usize = 1;
     const FOX_COUNT: usize = 6 * CARD_MULTIPLIER;
-    const ROASTER_COUNT: usize = 15 * CARD_MULTIPLIER;
+    const ROOSTER_COUNT: usize = 15 * CARD_MULTIPLIER;
     const HEN_COUNT: usize = 15 * CARD_MULTIPLIER;
     const NEST_COUNT: usize = 11 * CARD_MULTIPLIER;
 
     pub fn init(allocator: Allocator, player1: []const u8, player2: []const u8, deck_multiplier: usize) !Game {
         var card_array_list = ArrayList(Card).init(allocator);
-        var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROASTER} ** ROASTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
+        var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROOSTER} ** ROOSTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
         for (0..deck_multiplier) |i| {
             _ = i;
             try card_array_list.appendSlice(cards[0..]);
@@ -122,7 +122,7 @@ pub const Game = struct {
         var card_array_list = ArrayList(Card).init(self.allocator);
         for (0..self.deck_multiplier) |i| {
             _ = i;
-            var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROASTER} ** ROASTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
+            var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROOSTER} ** ROOSTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
             try card_array_list.appendSlice(cards[0..]);
         }
         shuffleCards(card_array_list.items);
