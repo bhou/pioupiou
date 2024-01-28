@@ -16,6 +16,9 @@ pub fn build(b: *std.Build) void {
     // set a preferred release mode, allowing the user to decide how to optimize.
     const optimize = b.standardOptimizeOption(.{});
 
+    const zigcli_dep = b.dependency("zig-cli", .{ .target = target });
+    const zigcli_mod = zigcli_dep.module("zig-cli");
+
     const exe = b.addExecutable(.{
         .name = "pioupiou",
         // In this case the main source file is merely a path, however, in more
@@ -24,6 +27,8 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    exe.addModule("zig-cli", zigcli_mod);
+
     const raylib = raySdk.addRaylib(b, target, optimize, .{});
     exe.addIncludePath(.{ .path = "raylib/src" });
     exe.linkLibrary(raylib);
