@@ -8,6 +8,7 @@ const r = @cImport({
     @cInclude("raylib.h");
 });
 
+/// The human agent for RayLib UI.
 pub const HumanAgent = struct {
     game: *Game,
 
@@ -25,9 +26,18 @@ pub const HumanAgent = struct {
         };
     }
 
+    pub fn allocInit(allocator: std.mem.Allocator, game: *Game, player_idx: u8) !*HumanAgent {
+        var agent = try allocator.create(HumanAgent);
+        agent.player_idx = player_idx;
+        agent.game = game;
+        agent.game_version = 99; // give the impossible initial version so that the first run will always update
+        agent.state = @constCast(&game.getState());
+        return agent;
+    }
+
     pub fn run(self: *HumanAgent) !void {
         var game = self.game;
-        while (!r.WindowShouldClose()) {
+        while (true) {
             if (self.game_version != game.getVersion()) {
                 self.game_version = game.getVersion();
                 self.state = @constCast(&game.getState());
