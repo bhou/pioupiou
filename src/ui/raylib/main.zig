@@ -4,13 +4,15 @@ const Action = @import("../../model/action.zig").Action;
 const Scene = @import("./render.zig").Scene;
 const res = @import("./resources.zig");
 const Textures = res.Textures;
+const Config = @import("../../config.zig").Config;
+const Agent = @import("../../agents/agent.zig").Agent;
 
 const r = @cImport({
     @cInclude("raylib.h");
 });
 
 /// the main loop of the raylib based UI
-pub fn run(game: *Game) !void {
+pub fn run(game: *Game, config: *Config) !void {
     const allocator = std.heap.page_allocator;
 
     r.InitWindow(1280, 720, "Piou Piou");
@@ -30,6 +32,16 @@ pub fn run(game: *Game) !void {
 
     var cache_version: usize = 0;
     var state = game.getState();
+
+    // start agents
+    var agent_1 = try Agent.getAgentByType(config, @constCast(config.player1_type), game, 0);
+    var thread_1 = try std.Thread.spawn(.{}, Agent.run, .{&agent_1});
+    thread_1.detach();
+
+    var agent_2 = try Agent.getAgentByType(config, @constCast(config.player2_type), game, 1);
+    var thread_2 = try std.Thread.spawn(.{}, Agent.run, .{&agent_2});
+    thread_2.detach();
+
     // main loop
     while (!r.WindowShouldClose()) {
 

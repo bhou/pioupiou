@@ -17,17 +17,9 @@ const AI_ACTION_DELAY = 0;
 var gpa = std.heap.GeneralPurposeAllocator(.{}){};
 const allocator = gpa.allocator();
 
-var config = struct {
-    show_version: bool = false,
-    headless: bool = false,
-    auto_save: bool = false,
-    replay: []const u8 = "",
-    player1_name: []const u8 = "Player 1",
-    player2_name: []const u8 = "Player 2",
-    player1_type: []const u8 = "unspecified",
-    player2_type: []const u8 = "unspecified",
-    delay: usize = 0,
-}{};
+const Config = @import("./config.zig").Config;
+
+const config = Config{};
 
 // options
 var show_version = cli.Option{
@@ -125,46 +117,14 @@ fn run() !void {
     var game = try Game.init(allocator, config.player1_name, config.player2_name, 2);
     defer game.deinit();
 
-    // start the agents for both players
-    var agent1 = try getAgent(&game, 0);
-    var thread1 = try thread.spawn(.{}, Agent.run, .{&agent1});
-    thread1.detach();
-
-    var agent2 = try getAgent(&game, 1);
-    var thread2 = try thread.spawn(.{}, Agent.run, .{&agent2});
-    thread2.detach();
-
     // now run the main loop of the UI
     if (config.headless) {
-        try TerminalUI.run(&game);
+        try TerminalUI.run(&game, &config);
     } else {
-        try RaylibUI.run(&game);
+        try RaylibUI.run(&game, &config);
     }
 }
 
 pub fn main() !void {
     return cli.run(app, allocator);
-}
-
-fn getAgent(game: *Game, player_idx: u8) !Agent {
-    const player_type = if (player_idx == 0) config.player1_type else config.player2_type;
-    if (std.mem.eql(u8, player_type, "human")) {
-        if (config.headless) {
-            // start human agent for terminal
-        } else {
-            // start human agent for raylib
-            std.debug.print("starting raylib human agent for player {d}\n", .{player_idx + 1});
-            return Agent{ .raylib_human = RaylibHumanAgent.init(game, player_idx) };
-        }
-    }
-    if (std.mem.eql(u8, player_type, "simple")) {
-        std.debug.print("starting simple agent for player {d}\n", .{player_idx + 1});
-        return Agent{ .simple = SimpleAgent.init(game, player_idx, config.delay) };
-    }
-    if (std.mem.eql(u8, player_type, "gpt")) {
-        std.debug.print("starting gpt agent for player {d}\n", .{1});
-        return Agent{ .gpt = GptAgent.init(game, player_idx) };
-    }
-
-    return error.UnknownPlayerType;
 }
