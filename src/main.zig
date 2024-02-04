@@ -19,7 +19,7 @@ const allocator = gpa.allocator();
 
 const Config = @import("./config.zig").Config;
 
-const config = Config{};
+var config = Config{};
 
 // options
 var show_version = cli.Option{

@@ -1,11 +1,16 @@
 .{
-  .name = "pioupiou",
-  .version = "0.1.0",
-  .dependencies = .{
-    .@"zig-cli" = .{
-      // URL pattern: https://github.com/sam701/zig-cli/archive/<commit hash>.tar.gz
-      .url = "https://github.com/sam701/zig-cli/archive/f5ea283da371809032858cb6d3b630c7235a7f87.tar.gz",
-      .hash = "12206ccc06b129fa80f6f6354f0e5990d52cafe054b446caf38d4d18c069dae06033",
+    .name = "pioupiou",
+    .version = "0.1.0",
+    .dependencies = .{
+        .@"zig-cli" = .{
+            // URL pattern: https://github.com/sam701/zig-cli/archive/<commit hash>.tar.gz
+            // for zig 0.11.0
+            .url = "https://github.com/sam701/zig-cli/archive/f5ea283da371809032858cb6d3b630c7235a7f87.tar.gz",
+            .hash = "12206ccc06b129fa80f6f6354f0e5990d52cafe054b446caf38d4d18c069dae06033",
+
+            // for zig 0.12.0
+            // .url = "https://github.com/sam701/zig-cli/archive/50201f0086da689cd104c2fef350f3dbe894eea7.tar.gz",
+            // .hash = "12206bcdc028b988dc967302869189ae2e80f5c4639354fa8970e1665c8a3fb46a50",
+        },
     },
-  },
 }
