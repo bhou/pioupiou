@@ -87,6 +87,7 @@ var app = &cli.App{
             &show_version,
             &headless,
             &replay,
+            &auto_save,
             &player1_name,
             &player2_name,
             &player1_type,
@@ -114,7 +115,7 @@ fn run() !void {
     }
 
     // init game state
-    var game = try Game.init(allocator, config.player1_name, config.player2_name, 2);
+    var game = try Game.init(allocator, config.player1_name, config.player2_name, 2, config.auto_save);
     defer game.deinit();
 
     // now run the main loop of the UI

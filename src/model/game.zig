@@ -8,6 +8,9 @@ const Card = @import("./card.zig").Card;
 
 const Mutex = std.Thread.Mutex;
 
+var wd_buffer: [std.fs.MAX_PATH_BYTES]u8 = undefined;
+var log_path_buffer: [std.fs.MAX_PATH_BYTES]u8 = undefined;
+
 pub const State = struct {
     version: usize = 0,
     players: [2]Player,
@@ -65,13 +68,20 @@ pub const Game = struct {
     cards: ArrayList(Card),
     deck_multiplier: usize = 1,
 
+    game_root: []const u8,
+    game_seed: i64 = 0,
+    game_id: usize = 0,
+    game_log_path: []const u8 = undefined,
+
+    auto_save: bool = false,
+
     const CARD_MULTIPLIER: usize = 1;
     const FOX_COUNT: usize = 6 * CARD_MULTIPLIER;
     const ROOSTER_COUNT: usize = 15 * CARD_MULTIPLIER;
     const HEN_COUNT: usize = 15 * CARD_MULTIPLIER;
     const NEST_COUNT: usize = 11 * CARD_MULTIPLIER;
 
-    pub fn init(allocator: Allocator, player1: []const u8, player2: []const u8, deck_multiplier: usize) !Game {
+    pub fn init(allocator: Allocator, player1: []const u8, player2: []const u8, deck_multiplier: usize, auto_save: bool) !Game {
         var card_array_list = ArrayList(Card).init(allocator);
         var cards = [_]Card{Card.FOX} ** FOX_COUNT ++ [_]Card{Card.ROOSTER} ** ROOSTER_COUNT ++ [_]Card{Card.HEN} ** HEN_COUNT ++ [_]Card{Card.NEST} ** NEST_COUNT;
         for (0..deck_multiplier) |i| {
@@ -96,6 +106,8 @@ pub const Game = struct {
         p2.addCard(card_array_list.pop());
         p2.addCard(card_array_list.pop());
 
+        var game_root = try std.os.getcwd(&wd_buffer);
+
         return Game{
             .allocator = allocator,
             .state = State{
@@ -109,6 +121,9 @@ pub const Game = struct {
             },
             .cards = card_array_list,
             .deck_multiplier = deck_multiplier,
+            .game_root = game_root,
+            .game_seed = std.time.timestamp(),
+            .auto_save = auto_save,
         };
     }
 
@@ -145,7 +160,51 @@ pub const Game = struct {
             .action = Action.NONE,
         };
 
+        self.state.version = 0;
+
         self.state.turn_idx = 0;
+
+        self.game_id += 1;
+
+        try self.updateLogPath();
+    }
+
+    fn updateLogPath(self: *Game) !void {
+        if (self.auto_save == false) {
+            return;
+        }
+
+        const log_sub_dir = try std.fmt.allocPrint(self.allocator, "./logs/{d}", .{self.game_seed});
+        defer self.allocator.free(log_sub_dir);
+
+        const log_dir = try std.fmt.allocPrint(self.allocator, "{s}/logs/{d}", .{ self.game_root, self.game_seed });
+        defer self.allocator.free(log_dir);
+
+        // first open the log root directory
+        var root_dir = try std.fs.openDirAbsolute(self.game_root, .{});
+        defer root_dir.close();
+
+        try root_dir.makePath(log_sub_dir);
+
+        const log_path = try std.fmt.allocPrint(self.allocator, "{s}/{d}.log", .{ log_dir, self.game_id });
+        defer self.allocator.free(log_path);
+
+        std.mem.copyForwards(u8, log_path_buffer[0..], log_path[0..]);
+        self.game_log_path = log_path_buffer[0..log_path.len];
+
+        var file = std.fs.createFileAbsolute(log_path, .{ .exclusive = true }) catch |e| {
+            switch (e) {
+                error.PathAlreadyExists => {
+                    std.debug.print("log path already exists", .{});
+                    return;
+                },
+                else => {
+                    return e;
+                },
+            }
+        };
+        defer file.close();
+        // return error.UnexpectedError;
     }
 
     pub fn getVersion(self: *Game) usize {
@@ -172,6 +231,9 @@ pub const Game = struct {
     pub fn handle(self: *Game, player_idx: u8, action: Action) !void {
         self.lock.lock();
         defer self.lock.unlock();
+
+        try self.updateLogPath();
+
         // if (player_idx != self.state.turn_idx and action != Action.RESET_GAME) {
         //     std.debug.print("Player {d} tried to play out of turn\n", .{player_idx});
         //     return;
@@ -180,7 +242,6 @@ pub const Game = struct {
         switch (action) {
             Action.RESET_GAME => {
                 try self.reset();
-                self.state.version = 1;
             },
             Action.EXCHANGE_CARD_1 => {
                 if (self.cards.items.len == 0) {
@@ -272,6 +333,7 @@ pub const Game = struct {
                 .action = Action.WIN,
             };
             self.state.version += 1;
+            try self.persistState();
             return;
         }
 
@@ -291,6 +353,7 @@ pub const Game = struct {
         };
         // update the version
         self.state.version += 1;
+        try self.persistState();
     }
 
     fn draw(self: *Game, player_idx: u8) void {
@@ -300,4 +363,40 @@ pub const Game = struct {
         };
         self.state.version += 1;
     }
+
+    fn persistState(self: Game) !void {
+        if (self.auto_save == false) {
+            return;
+        }
+        var out = ArrayList(u8).init(self.allocator);
+        defer out.deinit();
+
+        std.debug.print("persisting state to {s}\n", .{self.game_log_path});
+        var f = try std.fs.openFileAbsolute(self.game_log_path, .{ .mode = std.fs.File.OpenMode.read_write });
+        defer f.close();
+
+        var stat = try f.stat();
+        try f.seekTo(stat.size);
+
+        std.json.stringify(self.state, .{}, f.writer()) catch |err| {
+            std.debug.print("Error: {}\n", .{err});
+            return;
+        };
+        _ = try f.write("\n");
+    }
 };
+
+test "game init and update log path should not leak memory" {
+    // to test if it leaks memory with error, modify the code to return an error from updateLogPath
+    var game = try Game.init(std.testing.allocator, "player1", "player2", 2, true);
+
+    game.updateLogPath() catch |err| {
+        std.debug.print("Error: {}\n", .{err});
+    };
+
+    game.reset() catch |err| {
+        std.debug.print("Error: {}\n", .{err});
+    };
+
+    defer game.deinit();
+}
