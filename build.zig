@@ -1,5 +1,4 @@
 const std = @import("std");
-const raySdk = @import("raylib/src/build.zig");
 
 // Although this function looks imperative, note that its job is to
 // declaratively construct a build graph that will be executed by an external
@@ -19,6 +18,8 @@ pub fn build(b: *std.Build) void {
     const zigcli_dep = b.dependency("zig-cli", .{ .target = target });
     const zigcli_mod = zigcli_dep.module("zig-cli");
 
+    const raylib_dep = b.dependency("raylib", .{ .target = target });
+
     const exe = b.addExecutable(.{
         .name = "pioupiou",
         // In this case the main source file is merely a path, however, in more
@@ -27,11 +28,10 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    exe.addModule("zig-cli", zigcli_mod);
+    exe.root_module.addImport("zig-cli", zigcli_mod);
+    exe.linkLibrary(raylib_dep.artifact("raylib"));
 
-    const raylib = raySdk.addRaylib(b, target, optimize, .{});
-    exe.addIncludePath(.{ .path = "raylib/src" });
-    exe.linkLibrary(raylib);
+    //
 
     // This declares intent for the executable to be installed into the
     // standard location when the user invokes the "install" step (the default

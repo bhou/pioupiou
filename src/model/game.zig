@@ -106,7 +106,7 @@ pub const Game = struct {
         p2.addCard(card_array_list.pop());
         p2.addCard(card_array_list.pop());
 
-        var game_root = try std.os.getcwd(&wd_buffer);
+        const game_root = try std.posix.getcwd(&wd_buffer);
 
         return Game{
             .allocator = allocator,
@@ -375,7 +375,7 @@ pub const Game = struct {
         var f = try std.fs.openFileAbsolute(self.game_log_path, .{ .mode = std.fs.File.OpenMode.read_write });
         defer f.close();
 
-        var stat = try f.stat();
+        const stat = try f.stat();
         try f.seekTo(stat.size);
 
         std.json.stringify(self.state, .{}, f.writer()) catch |err| {

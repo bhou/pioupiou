@@ -1,16 +1,19 @@
 .{
     .name = "pioupiou",
     .version = "0.1.0",
+    .paths = .{
+        "./src",
+        "./build.zig",
+        "./builg.zig.zon",
+    },
     .dependencies = .{
         .@"zig-cli" = .{
-            // URL pattern: https://github.com/sam701/zig-cli/archive/<commit hash>.tar.gz
-            // for zig 0.11.0
-            .url = "https://github.com/sam701/zig-cli/archive/f5ea283da371809032858cb6d3b630c7235a7f87.tar.gz",
-            .hash = "12206ccc06b129fa80f6f6354f0e5990d52cafe054b446caf38d4d18c069dae06033",
-
-            // for zig 0.12.0
-            // .url = "https://github.com/sam701/zig-cli/archive/50201f0086da689cd104c2fef350f3dbe894eea7.tar.gz",
-            // .hash = "12206bcdc028b988dc967302869189ae2e80f5c4639354fa8970e1665c8a3fb46a50",
+            .url = "https://github.com/sam701/zig-cli/archive/c12256bff1715a0a9e21dce17c546cc8c8b52bf7.tar.gz",
+            .hash = "1220c008492d9460c3be2b209600a948181e6efb3bf0d79a1633def499632e708f4b",
+        },
+        .raylib = .{
+            .url = "https://github.com/raysan5/raylib/archive/b03c8ba945a06ed1ec3d6ed7c3185e1264909323.tar.gz",
+            .hash = "1220b6b6198344837d51588b1ed3f63cd6b56b2d60da675219f7578018b54f885830",
         },
     },
 }

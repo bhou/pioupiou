@@ -18,15 +18,15 @@ fn httpGet(allocator: Allocator, url: []const u8) ![]const u8 {
     errdefer client.deinit();
 
     {
-        var h = http.Headers{ .allocator = allocator };
-        defer h.deinit();
-
         const uri = try std.Uri.parse(url);
 
-        var req = try client.request(.GET, uri, h, .{});
+        const headers_buf = try allocator.alloc(u8, 2048);
+        defer allocator.free(headers_buf);
+
+        var req = try client.open(.GET, uri, .{ .server_header_buffer = headers_buf });
         defer req.deinit();
 
-        try req.start();
+        try req.send();
         try req.wait();
 
         const body = try req.reader().readAllAlloc(allocator, 8192000);
