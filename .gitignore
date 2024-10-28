@@ -4,3 +4,8 @@
 # zig related
 zig-cache
 zig-out
+.zig-cache
+.zig-out
+
+# projects related
+logs
